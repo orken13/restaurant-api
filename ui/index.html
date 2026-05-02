@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restoran Sipariş Sistemi</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,300;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0e0c;
+    --surface: #1a1916;
+    --surface2: #242320;
+    --border: #2e2d2a;
+    --text: #e8e4dc;
+    --text2: #8a8780;
+    --accent: #d4a853;
+    --accent2: #c8855a;
+    --green: #6db87a;
+    --red: #c85a5a;
+    --blue: #5a8fc8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+
+  #auth-status {
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  #auth-status span {
+    color: var(--green);
+  }
+
+  nav {
+    display: flex;
+    gap: 0;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  nav button {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  nav button:hover:not(.active) {
+    color: var(--text);
+  }
+
+  .tab { display: none; padding: 40px; max-width: 900px; }
+  .tab.active { display: block; }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .section-sub {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 32px;
+  }
+
+  /* MENU */
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+  }
+
+  .menu-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .menu-item:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .menu-item.selected {
+    border-color: var(--accent);
+    background: var(--surface2);
+  }
+
+  .menu-item.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: var(--accent);
+    font-size: 14px;
+  }
+
+  .menu-item-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .menu-item-cat {
+    font-size: 11px;
+    color: var(--text2);
+    margin-bottom: 12px;
+  }
+
+  .menu-item-price {
+    font-size: 18px;
+    color: var(--accent);
+    font-family: 'Fraunces', serif;
+  }
+
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .qty-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-display { font-size: 14px; min-width: 20px; text-align: center; }
+
+  /* ORDER SUMMARY */
+  .order-summary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .order-summary h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text2);
+    margin-bottom: 16px;
+  }
+
+  .order-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .order-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+    padding-top: 12px;
+    color: var(--accent);
+    font-family: 'Fraunces', serif;
+  }
+
+  .table-input {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .table-input label { font-size: 12px; color: var(--text2); }
+
+  input[type="number"], input[type="text"], input[type="email"], input[type="password"], select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus { border-color: var(--accent); }
+  input[type="number"] { width: 80px; }
+
+  /* BUTTONS */
+  .btn {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 12px 24px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .btn:hover { background: var(--accent2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* KITCHEN */
+  .order-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: all 0.3s;
+  }
+
+  .order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .order-card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 300;
+  }
+
+  .status-badge {
+    font-size: 10px;
+    padding: 4px 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .status-pending { background: #2a2218; color: var(--accent); border: 1px solid var(--accent); }
+  .status-preparing { background: #1a2430; color: var(--blue); border: 1px solid var(--blue); }
+  .status-ready { background: #182418; color: var(--green); border: 1px solid var(--green); }
+
+  .order-items-list {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 16px;
+    line-height: 1.8;
+  }
+
+  .order-actions { display: flex; gap: 8px; }
+
+  /* LOGIN */
+  .login-form {
+    max-width: 360px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+  }
+
+  .form-row { margin-bottom: 16px; }
+  .form-row label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .form-row input, .form-row select { width: 100%; }
+
+  /* TOAST */
+  #toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 12px 20px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    max-width: 300px;
+  }
+
+  #toast.show { opacity: 1; }
+  #toast.success { border-color: var(--green); color: var(--green); }
+  #toast.error { border-color: var(--red); color: var(--red); }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--text2);
+    font-size: 13px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Restoran Sipariş Sistemi</h1>
+  <div id="auth-status">Giriş yapılmadı</div>
+</header>
+
+<nav>
+  <button class="active" onclick="showTab('menu')">Menü & Sipariş</button>
+  <button onclick="showTab('kitchen')">Mutfak Ekranı</button>
+  <button onclick="showTab('login')">Personel Girişi</button>
+</nav>
+
+<!-- MENU TAB -->
+<div id="tab-menu" class="tab active">
+  <div class="section-title">Menü</div>
+  <div class="section-sub">Ürünlere tıklayarak sipariş oluşturun</div>
+
+  <div id="menu-grid" class="menu-grid">
+    <div class="empty-state">Menü yükleniyor...</div>
+  </div>
+
+  <div class="order-summary" id="order-summary" style="display:none">
+    <h3>Sipariş Özeti</h3>
+    <div id="order-lines"></div>
+    <div class="order-total">
+      <span>Toplam</span>
+      <span id="order-total">₺0</span>
+    </div>
+  </div>
+
+  <div class="table-input">
+    <label>Masa No</label>
+    <input type="number" id="table-number" value="1" min="1" max="50">
+    <button class="btn" onclick="submitOrder()" id="order-btn">Sipariş Ver</button>
+  </div>
+</div>
+
+<!-- KITCHEN TAB -->
+<div id="tab-kitchen" class="tab">
+  <div class="section-title">Mutfak Ekranı</div>
+  <div class="section-sub">Aktif siparişler — durum güncellemek için JWT token gerekli</div>
+
+  <div style="display:flex; gap:12px; margin-bottom:24px; align-items:center">
+    <button class="btn" onclick="loadOrders()">Yenile</button>
+    <span style="font-size:11px; color:var(--text2)">Otomatik yenileme: 10sn</span>
+  </div>
+
+  <div id="orders-list">
+    <div class="empty-state">Aktif sipariş yok</div>
+  </div>
+</div>
+
+<!-- LOGIN TAB -->
+<div id="tab-login" class="tab">
+  <div class="section-title">Personel Girişi</div>
+  <div class="section-sub">Kasiyer veya mutfak hesabıyla giriş yapın</div>
+
+  <div class="login-form">
+    <div class="form-row">
+      <label>E-posta</label>
+      <input type="email" id="login-email" placeholder="ornek@resto.com">
+    </div>
+    <div class="form-row">
+      <label>Şifre</label>
+      <input type="password" id="login-password" placeholder="••••••••">
+    </div>
+    <button class="btn" onclick="doLogin()" style="width:100%">Giriş Yap</button>
+
+    <div class="divider"></div>
+
+    <div style="font-size:11px; color:var(--text2); margin-bottom:16px; text-transform:uppercase; letter-spacing:0.05em">Yeni Hesap Oluştur</div>
+    <div class="form-row">
+      <label>Ad</label>
+      <input type="text" id="reg-name" placeholder="Ad Soyad">
+    </div>
+    <div class="form-row">
+      <label>E-posta</label>
+      <input type="email" id="reg-email" placeholder="ornek@resto.com">
+    </div>
+    <div class="form-row">
+      <label>Şifre</label>
+      <input type="password" id="reg-password" placeholder="••••••••">
+    </div>
+    <div class="form-row">
+      <label>Rol</label>
+      <select id="reg-role">
+        <option value="cashier">Kasiyer</option>
+        <option value="kitchen">Mutfak</option>
+      </select>
+    </div>
+    <button class="btn" onclick="doRegister()" style="width:100%; background:var(--surface2); color:var(--text); border:1px solid var(--border)">Kayıt Ol</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = 'http://localhost:8000';
+let token = localStorage.getItem('token') || null;
+let userRole = localStorage.getItem('role') || null;
+let cart = {};
+let menuItems = [];
+let ordersRefreshInterval = null;
+
+// ── UTILS ──────────────────────────────────────────
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  setTimeout(() => t.className = '', 3000);
+}
+
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'kitchen') loadOrders();
+}
+
+function updateAuthStatus() {
+  const el = document.getElementById('auth-status');
+  if (token) {
+    el.innerHTML = `Giriş yapıldı — <span>${userRole}</span> | <a href="#" onclick="logout()" style="color:var(--text2); font-size:11px">Çıkış</a>`;
+  } else {
+    el.textContent = 'Giriş yapılmadı';
+  }
+}
+
+function logout() {
+  token = null; userRole = null;
+  localStorage.removeItem('token');
+  localStorage.removeItem('role');
+  updateAuthStatus();
+  showToast('Çıkış yapıldı', 'success');
+}
+
+// ── MENU ──────────────────────────────────────────
+
+async function loadMenu() {
+  try {
+    const res = await fetch(`${API}/menu/`);
+    menuItems = await res.json();
+    renderMenu();
+  } catch(e) {
+    document.getElementById('menu-grid').innerHTML = '<div class="empty-state">API bağlantısı kurulamadı. Docker çalışıyor mu?</div>';
+  }
+}
+
+function renderMenu() {
+  const grid = document.getElementById('menu-grid');
+  if (!menuItems.length) {
+    grid.innerHTML = '<div class="empty-state">Menüde ürün yok</div>';
+    return;
+  }
+  grid.innerHTML = menuItems.map(item => `
+    <div class="menu-item ${cart[item.id] ? 'selected' : ''}" id="card-${item.id}" onclick="toggleItem(${item.id})">
+      <div class="menu-item-name">${item.name}</div>
+      <div class="menu-item-cat">${item.category}</div>
+      <div class="menu-item-price">₺${item.price.toFixed(2)}</div>
+      ${cart[item.id] ? `
+        <div class="qty-control" onclick="event.stopPropagation()">
+          <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+          <span class="qty-display">${cart[item.id]}</span>
+          <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+  renderOrderSummary();
+}
+
+function toggleItem(id) {
+  if (cart[id]) {
+    delete cart[id];
+  } else {
+    cart[id] = 1;
+  }
+  renderMenu();
+}
+
+function changeQty(id, delta) {
+  cart[id] = (cart[id] || 0) + delta;
+  if (cart[id] <= 0) delete cart[id];
+  renderMenu();
+}
+
+function renderOrderSummary() {
+  const summary = document.getElementById('order-summary');
+  const lines = document.getElementById('order-lines');
+  const total = document.getElementById('order-total');
+  const items = Object.entries(cart);
+
+  if (!items.length) { summary.style.display = 'none'; return; }
+  summary.style.display = 'block';
+
+  let totalPrice = 0;
+  lines.innerHTML = items.map(([id, qty]) => {
+    const item = menuItems.find(m => m.id == id);
+    if (!item) return '';
+    const subtotal = item.price * qty;
+    totalPrice += subtotal;
+    return `<div class="order-line"><span>${qty}x ${item.name}</span><span>₺${subtotal.toFixed(2)}</span></div>`;
+  }).join('');
+
+  total.textContent = `₺${totalPrice.toFixed(2)}`;
+}
+
+async function submitOrder() {
+  const tableNum = parseInt(document.getElementById('table-number').value);
+  const items = Object.entries(cart).map(([id, qty]) => ({ menu_item_id: parseInt(id), quantity: qty }));
+
+  if (!items.length) { showToast('Sepet boş', 'error'); return; }
+
+  try {
+    const res = await fetch(`${API}/orders/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ table_number: tableNum, items })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      cart = {};
+      renderMenu();
+      showToast(`Sipariş #${data.id} verildi! Masa ${tableNum}`, 'success');
+    } else {
+      showToast(data.detail || 'Hata', 'error');
+    }
+  } catch(e) {
+    showToast('Bağlantı hatası', 'error');
+  }
+}
+
+// ── KITCHEN ──────────────────────────────────────
+
+async function loadOrders() {
+  try {
+    const res = await fetch(`${API}/orders/active`);
+    const orders = await res.json();
+    renderOrders(orders);
+  } catch(e) {
+    document.getElementById('orders-list').innerHTML = '<div class="empty-state">API bağlantısı kurulamadı</div>';
+  }
+}
+
+function renderOrders(orders) {
+  const list = document.getElementById('orders-list');
+  if (!orders.length) {
+    list.innerHTML = '<div class="empty-state">Aktif sipariş yok</div>';
+    return;
+  }
+  list.innerHTML = orders.map(order => `
+    <div class="order-card">
+      <div class="order-card-header">
+        <div class="order-card-title">Masa ${order.table} — Sipariş #${order.id}</div>
+        <span class="status-badge status-${order.status}">${order.status}</span>
+      </div>
+      <div class="order-items-list">Toplam: ₺${order.total}</div>
+      <div class="order-actions">
+        ${order.status === 'pending' ? `<button class="btn" onclick="updateStatus(${order.id}, 'preparing')">Hazırlamaya Başla</button>` : ''}
+        ${order.status === 'preparing' ? `<button class="btn" onclick="updateStatus(${order.id}, 'ready')">Hazır</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function updateStatus(orderId, status) {
+  if (!token) { showToast('Önce giriş yapın', 'error'); return; }
+  try {
+    const res = await fetch(`${API}/orders/${orderId}/status`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`Sipariş #${orderId} → ${status}`, 'success');
+      loadOrders();
+    } else {
+      showToast(data.detail || 'Hata', 'error');
+    }
+  } catch(e) {
+    showToast('Bağlantı hatası', 'error');
+  }
+}
+
+// ── AUTH ──────────────────────────────────────────
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      token = data.token;
+      userRole = data.role;
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', userRole);
+      updateAuthStatus();
+      showToast(`Hoşgeldin! Rol: ${userRole}`, 'success');
+    } else {
+      showToast(data.detail || 'Giriş başarısız', 'error');
+    }
+  } catch(e) {
+    showToast('Bağlantı hatası', 'error');
+  }
+}
+
+async function doRegister() {
+  const body = {
+    name: document.getElementById('reg-name').value,
+    email: document.getElementById('reg-email').value,
+    password: document.getElementById('reg-password').value,
+    role: document.getElementById('reg-role').value
+  };
+
+  try {
+    const res = await fetch(`${API}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showToast('Hesap oluşturuldu! Giriş yapabilirsiniz.', 'success');
+    } else {
+      showToast(data.detail || 'Hata', 'error');
+    }
+  } catch(e) {
+    showToast('Bağlantı hatası', 'error');
+  }
+}
+
+// ── INIT ──────────────────────────────────────────
+
+updateAuthStatus();
+loadMenu();
+setInterval(loadOrders, 10000);
+</script>
+</body>
+</html>
