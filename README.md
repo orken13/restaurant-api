@@ -3,7 +3,7 @@
 A production-ready microservice architecture for restaurant order tracking.
 Built with FastAPI, PostgreSQL, Redis, RabbitMQ, and Docker Compose.
 
-**Live Demo:** https://restaurant-api-production-02bf.up.railway.app/docs
+**Live Demo:** https://restaurant-api-production-02bf.up.railway.app/#
 
 > **Note:** The live demo includes FastAPI, PostgreSQL, Redis, and RabbitMQ. The Kitchen and Notification services are **not deployed** on Railway because deploying additional services requires a paid plan. These services work fully in the local Docker Compose setup.
 
