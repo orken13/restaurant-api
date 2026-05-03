@@ -1,6 +1,23 @@
 # Restaurant Order System
 
-A production-ready microservice architecture for restaurant order tracking — built with FastAPI, PostgreSQL, Redis, RabbitMQ, and Docker Compose.
+A production-ready microservice architecture for restaurant order tracking.
+Built with FastAPI, PostgreSQL, Redis, RabbitMQ, and Docker Compose.
+
+**Live Demo:** https://restaurant-api-production-02bf.up.railway.app/docs
+
+> **Note:** The live demo includes FastAPI, PostgreSQL, Redis, and RabbitMQ. The Kitchen and Notification services are **not deployed** on Railway because deploying additional services requires a paid plan. These services work fully in the local Docker Compose setup.
+
+---
+
+## Purpose
+
+This project was built to understand the **production deployment process** of a microservice architecture. The goal was not just to write code, but to learn:
+
+- How to containerize services with Docker and Docker Compose
+- How services communicate with each other (RabbitMQ, Redis, PostgreSQL)
+- How to deploy a multi-service application to a cloud platform (Railway)
+- How environment variables work in production vs local
+- How CI/CD works — pushing to GitHub automatically redeploys on Railway
 
 ---
 
@@ -71,8 +88,9 @@ Alembic        → Database migrations
 JWT + bcrypt   → Authentication & password hashing
 Redis          → Active order cache
 RabbitMQ       → Async messaging between microservices
-Docker Compose → Orchestrates all services
+Docker Compose → Orchestrates all services locally
 Nginx          → Serves frontend UI
+Railway        → Cloud deployment platform
 ```
 
 ---
@@ -83,6 +101,7 @@ Nginx          → Serves frontend UI
 restaurant-api/
 ├── docker-compose.yml
 ├── ui/
+│   ├── Dockerfile          # Nginx to serve frontend
 │   └── index.html          # Frontend (Menu, Kitchen screen, Login)
 └── services/
     ├── api/
@@ -108,7 +127,7 @@ restaurant-api/
 
 ---
 
-## Setup & Run
+## Local Setup
 
 ```bash
 # Clone the repo
@@ -125,6 +144,55 @@ docker compose up --build
 | API | http://localhost:8000 |
 | API Docs | http://localhost:8000/docs |
 | RabbitMQ Dashboard | http://localhost:15672 (guest/guest) |
+
+---
+
+## Production Deployment (Railway)
+
+This project is deployed on [Railway](https://railway.app). Each service runs as a separate Railway service.
+
+### Services deployed
+
+| Service | Platform | Status |
+|---------|----------|--------|
+| FastAPI | Railway (root: `services/api`) | ✅ Live |
+| PostgreSQL | Railway managed database | ✅ Live |
+| Redis | Railway managed Redis | ✅ Live |
+| RabbitMQ | Railway RabbitMQ Starter Package | ✅ Live |
+| UI | Railway (root: `ui`, Nginx) | ✅ Live |
+| Kitchen Service | Not deployed | ⚠️ Paid plan required |
+| Notification Service | Not deployed | ⚠️ Paid plan required |
+
+### Environment Variables (FastAPI service)
+
+```
+DATABASE_URL = postgresql://...@postgres.railway.internal:5432/railway
+REDIS_URL    = redis://...@redis.railway.internal:6379
+RABBITMQ_URL = amqp://...@rabbitmq.railway.internal:5672
+```
+
+### Deploy steps
+
+```
+1. Create Railway project
+2. Add PostgreSQL database
+3. Add Redis database
+4. Add RabbitMQ Starter Package template
+5. Add GitHub repo service → Root Directory: services/api
+6. Set environment variables
+7. Generate public domain
+8. Add GitHub repo service → Root Directory: ui
+9. Set port to 80
+10. Generate public domain for UI
+```
+
+### Auto-deploy
+
+Railway automatically redeploys when you push to `main` branch.
+
+```
+git push origin main → Railway detects change → rebuilds → redeploys
+```
 
 ---
 
